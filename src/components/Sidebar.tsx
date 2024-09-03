@@ -9,7 +9,6 @@ const Sidebar: React.FC = () => {
   const navItems = [
     { path: "/", label: "Home" },
     { path: "/bitcoin", label: "Bitcoin" },
-    { path: "/multisig", label: "Multisig" },
     { path: "/psbt", label: "PSBT" },
     { path: "/fees", label: "Fees" },
   ];
