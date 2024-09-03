@@ -1,5 +1,34 @@
 import React, { useState } from "react";
 import * as Bitcoin from "@caravan/bitcoin";
+import styled from "styled-components";
+import { motion } from "framer-motion";
+import { Card } from "../components/Card";
+import { Button } from "../components/Button";
+import { Input } from "../components/Input";
+import { Select } from "../components/Select";
+
+const StyledBitcoinGuide = styled(motion.div)`
+  max-width: 800px;
+  margin: 0 auto;
+`;
+
+const Title = styled(motion.h1)`
+  color: ${(props) => props.theme.colors.primary};
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+`;
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  in: { opacity: 1, y: 0 },
+  out: { opacity: 0, y: -20 },
+};
+
+const pageTransition = {
+  type: "tween",
+  ease: "anticipate",
+  duration: 0.5,
+};
 
 const BitcoinGuide: React.FC = () => {
   const [network, setNetwork] = useState<Bitcoin.Network>(
@@ -40,136 +69,97 @@ const BitcoinGuide: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <section className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-semibold mb-4">Network Selection</h2>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Select Network
-          </label>
-          <select
-            className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+    <StyledBitcoinGuide
+      initial="initial"
+      animate="in"
+      exit="out"
+      variants={pageVariants}
+      transition={pageTransition}
+    >
+      <Title
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        Bitcoin Guide
+      </Title>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <h2>Network Selection</h2>
+          <Select
             value={network}
             onChange={(e) => setNetwork(e.target.value as Bitcoin.Network)}
           >
             <option value={Bitcoin.Network.MAINNET}>Mainnet</option>
             <option value={Bitcoin.Network.TESTNET}>Testnet</option>
-          </select>
-        </div>
-      </section>
-
-      <section className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-semibold mb-4">Address Validation</h2>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="address"
-          >
-            Bitcoin Address
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="address"
-            type="text"
+          </Select>
+        </Card>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <h2>Address Validation</h2>
+          <Input
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter Bitcoin address"
           />
-        </div>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={handleValidateAddress}
-        >
-          Validate Address
-        </button>
-        {addressValidationResult && (
-          <p className="mt-4 text-sm text-gray-600">
-            {addressValidationResult}
-          </p>
-        )}
-      </section>
-
-      <section className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-semibold mb-4">Public Key Validation</h2>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="publicKey"
-          >
-            Public Key (hex)
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="publicKey"
-            type="text"
+          <Button onClick={handleValidateAddress}>Validate Address</Button>
+          {addressValidationResult && <p>{addressValidationResult}</p>}
+        </Card>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <h2>Public Key Validation</h2>
+          <Input
             value={publicKey}
             onChange={(e) => setPublicKey(e.target.value)}
             placeholder="Enter public key in hex format"
           />
-        </div>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={handleValidatePublicKey}
-        >
-          Validate Public Key
-        </button>
-        {publicKeyValidationResult && (
-          <p className="mt-4 text-sm text-gray-600">
-            {publicKeyValidationResult}
-          </p>
-        )}
-      </section>
-
-      <section className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-semibold mb-4">BIP32 Key Derivation</h2>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="extendedPublicKey"
-          >
-            Extended Public Key
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="extendedPublicKey"
-            type="text"
+          <Button onClick={handleValidatePublicKey}>Validate Public Key</Button>
+          {publicKeyValidationResult && <p>{publicKeyValidationResult}</p>}
+        </Card>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <h2>BIP32 Key Derivation</h2>
+          <Input
             value={extendedPublicKey}
             onChange={(e) => setExtendedPublicKey(e.target.value)}
             placeholder="Enter extended public key"
           />
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="bip32Path"
-          >
-            BIP32 Derivation Path
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="bip32Path"
-            type="text"
+          <Input
             value={bip32Path}
             onChange={(e) => setBip32Path(e.target.value)}
             placeholder="Enter BIP32 derivation path"
           />
-        </div>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={handleDeriveChildPublicKey}
-        >
-          Derive Child Public Key
-        </button>
-        {derivedPublicKey && (
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold">Derived Public Key:</h3>
-            <p className="text-sm text-gray-600 break-all">
-              {derivedPublicKey}
-            </p>
-          </div>
-        )}
-      </section>
-    </div>
+          <Button onClick={handleDeriveChildPublicKey}>
+            Derive Child Public Key
+          </Button>
+          {derivedPublicKey && (
+            <div>
+              <h3>Derived Public Key:</h3>
+              <p>{derivedPublicKey}</p>
+            </div>
+          )}
+        </Card>
+      </motion.div>
+    </StyledBitcoinGuide>
   );
 };
 

@@ -1,6 +1,32 @@
 import React, { useState } from "react";
 import { PsbtV2, autoLoadPSBT, getUnsignedMultisigPsbtV0 } from "@caravan/psbt";
 import { Network, P2SH } from "@caravan/bitcoin";
+import styled from "styled-components";
+import { Card } from "../components/Card";
+import { Button } from "../components/Button";
+import { Input } from "../components/Input";
+import { Select } from "../components/Select";
+
+const StyledPsbtGuide = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+`;
+
+const Title = styled.h1`
+  color: ${(props) => props.theme.colors.primary};
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+`;
 
 const PsbtGuide: React.FC = () => {
   const [psbt, setPsbt] = useState<PsbtV2 | null>(null);
@@ -72,30 +98,23 @@ const PsbtGuide: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">PSBT Guide</h1>
+    <StyledPsbtGuide>
+      <Title>PSBT Guide</Title>
 
-      <section className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-semibold mb-4">Create PSBT</h2>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Network
-          </label>
-          <select
-            className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            value={network}
-            onChange={(e) => setNetwork(e.target.value as Network)}
-          >
-            <option value={Network.TESTNET}>Testnet</option>
-            <option value={Network.MAINNET}>Mainnet</option>
-          </select>
-        </div>
+      <Card>
+        <h2>Create PSBT</h2>
+        <Select
+          value={network}
+          onChange={(e) => setNetwork(e.target.value as Network)}
+        >
+          <option value={Network.TESTNET}>Testnet</option>
+          <option value={Network.MAINNET}>Mainnet</option>
+        </Select>
 
-        <h3 className="text-xl font-semibold mb-2">Inputs</h3>
+        <h3>Inputs</h3>
         {inputs.map((input, index) => (
-          <div key={index} className="mb-4">
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+          <div key={index}>
+            <Input
               placeholder="TXID"
               value={input.txid}
               onChange={(e) => {
@@ -104,8 +123,7 @@ const PsbtGuide: React.FC = () => {
                 setInputs(newInputs);
               }}
             />
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+            <Input
               type="number"
               placeholder="Index"
               value={input.index}
@@ -115,8 +133,7 @@ const PsbtGuide: React.FC = () => {
                 setInputs(newInputs);
               }}
             />
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            <Input
               type="number"
               placeholder="Amount (sats)"
               value={input.amountSats}
@@ -128,20 +145,18 @@ const PsbtGuide: React.FC = () => {
             />
           </div>
         ))}
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        <Button
           onClick={() =>
             setInputs([...inputs, { txid: "", index: 0, amountSats: "" }])
           }
         >
           Add Input
-        </button>
+        </Button>
 
-        <h3 className="text-xl font-semibold mb-2 mt-4">Outputs</h3>
+        <h3>Outputs</h3>
         {outputs.map((output, index) => (
-          <div key={index} className="mb-4">
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2"
+          <div key={index}>
+            <Input
               placeholder="Address"
               value={output.address}
               onChange={(e) => {
@@ -150,8 +165,7 @@ const PsbtGuide: React.FC = () => {
                 setOutputs(newOutputs);
               }}
             />
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            <Input
               type="number"
               placeholder="Amount (sats)"
               value={output.amountSats}
@@ -163,77 +177,48 @@ const PsbtGuide: React.FC = () => {
             />
           </div>
         ))}
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        <Button
           onClick={() =>
             setOutputs([...outputs, { address: "", amountSats: "" }])
           }
         >
           Add Output
-        </button>
+        </Button>
 
-        <div className="mt-4">
-          <button
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={handleCreatePsbt}
-          >
-            Create PSBT
-          </button>
-        </div>
-      </section>
+        <Button onClick={handleCreatePsbt}>Create PSBT</Button>
+      </Card>
 
-      <section className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-semibold mb-4">Parse/Edit PSBT</h2>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            PSBT (Base64)
-          </label>
-          <textarea
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            rows={4}
-            value={psbtBase64}
-            onChange={(e) => setPsbtBase64(e.target.value)}
-          />
-        </div>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          onClick={handleParsePsbt}
-        >
-          Parse PSBT
-        </button>
+      <Card>
+        <h2>Parse/Edit PSBT</h2>
+        <TextArea
+          value={psbtBase64}
+          onChange={(e) => setPsbtBase64(e.target.value)}
+          placeholder="Enter PSBT (Base64)"
+        />
+        <Button onClick={handleParsePsbt}>Parse PSBT</Button>
 
         {psbt && (
-          <div className="mt-4">
-            <h3 className="text-xl font-semibold mb-2">Edit PSBT Fields</h3>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                PSBT_GLOBAL_TX_VERSION
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                type="number"
-                value={psbt.PSBT_GLOBAL_TX_VERSION}
-                onChange={(e) =>
-                  handleUpdatePsbtField(
-                    "PSBT_GLOBAL_TX_VERSION",
-                    e.target.value,
-                  )
-                }
-              />
-            </div>
+          <div>
+            <h3>Edit PSBT Fields</h3>
+            <Input
+              type="number"
+              value={psbt.PSBT_GLOBAL_TX_VERSION}
+              onChange={(e) =>
+                handleUpdatePsbtField("PSBT_GLOBAL_TX_VERSION", e.target.value)
+              }
+              placeholder="PSBT_GLOBAL_TX_VERSION"
+            />
           </div>
         )}
-      </section>
+      </Card>
 
       {psbtJson && (
-        <section className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          <h2 className="text-2xl font-semibold mb-4">PSBT JSON</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
-            {psbtJson}
-          </pre>
-        </section>
+        <Card>
+          <h2>PSBT JSON</h2>
+          <pre>{psbtJson}</pre>
+        </Card>
       )}
-    </div>
+    </StyledPsbtGuide>
   );
 };
 

@@ -1,31 +1,44 @@
+// src/App.tsx
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
+import { AnimatePresence } from "framer-motion";
+import { theme } from "./styles/theme";
+import { GlobalStyles } from "./styles/GlobalStyles";
 import Home from "./pages/Home";
 import BitcoinGuide from "./pages/Caravan-Bitcoin";
 import PsbtGuide from "./pages/Caravan-Psbt";
-// import FeesGuide from "./pages/FeesGuide";
+import Sidebar from "./components/Sidebar";
+import styled from "styled-components";
+
+const AppContainer = styled.div`
+  display: flex;
+`;
+
+const Content = styled.main`
+  flex: 1;
+  padding: 2rem;
+`;
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <div className="flex h-screen bg-gray-100">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
-            <div className="container mx-auto px-6 py-8">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/bitcoin" element={<BitcoinGuide />} />
-                <Route path="/psbt" element={<PsbtGuide />} />
-              </Routes>
-            </div>
-          </main>
-        </div>
-      </div>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <GlobalStyles />
+      <Router>
+        <AppContainer>
+          <Sidebar />
+          <Content>
+            <AnimatePresence exitBeforeEnter>
+              <Switch>
+                <Route exact path="/" component={Home} />
+                <Route path="/bitcoin" component={BitcoinGuide} />
+                <Route path="/psbt" component={PsbtGuide} />
+              </Switch>
+            </AnimatePresence>
+          </Content>
+        </AppContainer>
+      </Router>
+    </ThemeProvider>
   );
 };
 

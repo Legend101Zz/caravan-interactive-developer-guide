@@ -1,35 +1,43 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import styled from "styled-components";
+
+const SidebarContainer = styled.nav`
+  width: 250px;
+  background-color: ${(props) => props.theme.colors.primary};
+  color: white;
+  padding: 2rem;
+  height: 100vh;
+`;
+
+const SidebarLink = styled(Link)<{ active: boolean }>`
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 0;
+  font-weight: ${(props) => (props.active ? "bold" : "normal")};
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
 
-  const isActive = (path: string) => location.pathname === path;
-
-  const navItems = [
-    { path: "/", label: "Home" },
-    { path: "/bitcoin", label: "Bitcoin" },
-    { path: "/psbt", label: "PSBT" },
-    { path: "/fees", label: "Fees" },
-  ];
-
   return (
-    <div className="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
-      <h1 className="text-2xl font-semibold text-center">Caravan Guide</h1>
-      <nav>
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`block py-2.5 px-4 rounded transition duration-200 ${
-              isActive(item.path) ? "bg-gray-700" : "hover:bg-gray-700"
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-    </div>
+    <SidebarContainer>
+      <h2>Caravan Guide</h2>
+      <SidebarLink to="/" active={location.pathname === "/"}>
+        Home
+      </SidebarLink>
+      <SidebarLink to="/bitcoin" active={location.pathname === "/bitcoin"}>
+        Bitcoin Guide
+      </SidebarLink>
+      <SidebarLink to="/psbt" active={location.pathname === "/psbt"}>
+        PSBT Guide
+      </SidebarLink>
+    </SidebarContainer>
   );
 };
 
