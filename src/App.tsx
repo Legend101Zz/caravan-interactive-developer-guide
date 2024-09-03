@@ -1,6 +1,6 @@
 // src/App.tsx
 import React from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import { AnimatePresence } from "framer-motion";
 import { theme } from "./styles/theme";
@@ -28,12 +28,12 @@ const App: React.FC = () => {
         <AppContainer>
           <Sidebar />
           <Content>
-            <AnimatePresence exitBeforeEnter>
-              <Switch>
-                <Route exact path="/" component={Home} />
-                <Route path="/bitcoin" component={BitcoinGuide} />
-                <Route path="/psbt" component={PsbtGuide} />
-              </Switch>
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/bitcoin" element={<BitcoinGuide />} />
+                <Route path="/psbt" element={<PsbtGuide />} />
+              </Routes>
             </AnimatePresence>
           </Content>
         </AppContainer>
