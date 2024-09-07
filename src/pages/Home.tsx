@@ -1,53 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { motion } from "framer-motion";
 import { Card } from "../components/Card";
 
-const StyledHome = styled(motion.div)`
+const StyledHome = styled.div`
   max-width: 800px;
   margin: 0 auto;
 `;
 
-const Title = styled(motion.h1)`
+const Title = styled.h1`
   color: ${(props) => props.theme.colors.primary};
   font-size: 2.5rem;
   margin-bottom: 1rem;
 `;
 
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 },
-};
-
-const pageTransition = {
-  type: "tween",
-  ease: "anticipate",
-  duration: 0.5,
-};
-
 const Home: React.FC = () => {
   return (
-    <StyledHome
-      initial="initial"
-      animate="in"
-      exit="out"
-      variants={pageVariants}
-      transition={pageTransition}
-    >
-      <Title
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        Welcome to the Caravan Interactive Guide
-      </Title>
-      <Card
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-      >
+    <StyledHome>
+      <Title>Welcome to the Caravan Interactive Guide</Title>
+      <Card>
         <p>
           This guide provides hands-on examples and explanations for using the
           Caravan packages to work with Bitcoin transactions, multisig wallets,

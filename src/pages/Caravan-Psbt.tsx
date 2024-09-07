@@ -1,224 +1,219 @@
 import React, { useState } from "react";
-import { PsbtV2, autoLoadPSBT, getUnsignedMultisigPsbtV0 } from "@caravan/psbt";
-import { Network, P2SH } from "@caravan/bitcoin";
+import { PsbtV2, autoLoadPSBT } from "@caravan/psbt";
+import { Network } from "@caravan/bitcoin";
 import styled from "styled-components";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Select } from "../components/Select";
+import CodeBlock from "../components/CodeBlock";
+import Console from "../components/Console";
 
-const StyledPsbtGuide = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-`;
-
-const Title = styled.h1`
+const SectionTitle = styled.h2`
   color: ${(props) => props.theme.colors.primary};
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  margin-top: ${(props) => props.theme.spacing.large};
 `;
 
-const TextArea = styled.textarea`
-  width: 100%;
-  height: 100px;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-bottom: 10px;
+const ExampleWrapper = styled.div`
+  display: flex;
+  gap: ${(props) => props.theme.spacing.medium};
+`;
+
+const CodeWrapper = styled.div`
+  flex: 1;
+`;
+
+const ConsoleWrapper = styled.div`
+  flex: 1;
 `;
 
 const PsbtGuide: React.FC = () => {
-  const [psbt, setPsbt] = useState<PsbtV2 | null>(null);
   const [psbtBase64, setPsbtBase64] = useState("");
   const [psbtJson, setPsbtJson] = useState("");
   const [network, setNetwork] = useState<Network>(Network.TESTNET);
-  const [inputs, setInputs] = useState([
-    { txid: "", index: 0, amountSats: "" },
-  ]);
-  const [outputs, setOutputs] = useState([{ address: "", amountSats: "" }]);
-
-  const handleCreatePsbt = () => {
-    try {
-      const unsignedPsbt = getUnsignedMultisigPsbtV0({
-        network,
-        inputs: inputs.map((input) => ({
-          hash: input.txid,
-          index: input.index,
-          witnessUtxo: {
-            amount: parseInt(input.amountSats),
-            script: Buffer.alloc(0),
-          },
-          transactionHex: "", // Add a dummy transaction hex
-          spendingWallet: {
-            addressType: P2SH,
-            network,
-            extendedPublicKeys: [],
-            requiredSigners: 2,
-            totalSigners: 2,
-          },
-        })),
-        outputs: outputs.map((output) => ({
-          address: output.address,
-          value: parseInt(output.amountSats),
-        })),
-      });
-
-      const psbtV2 = PsbtV2.FromV0(unsignedPsbt.toBase64());
-      setPsbt(psbtV2);
-      setPsbtBase64(psbtV2.serialize());
-      setPsbtJson(JSON.stringify(psbtV2, null, 2));
-    } catch (error) {
-      console.error("Error creating PSBT:", error);
-    }
-  };
+  const [inputTxid, setInputTxid] = useState("");
+  const [inputIndex, setInputIndex] = useState("0");
+  const [outputAddress, setOutputAddress] = useState("");
+  const [outputAmount, setOutputAmount] = useState("");
+  const [createdPsbt, setCreatedPsbt] = useState("");
 
   const handleParsePsbt = () => {
     try {
       const parsedPsbt = new PsbtV2(psbtBase64);
-      setPsbt(parsedPsbt);
       setPsbtJson(JSON.stringify(parsedPsbt, null, 2));
     } catch (error) {
       console.error("Error parsing PSBT:", error);
+      setPsbtJson(JSON.stringify({ error: "Invalid PSBT" }, null, 2));
     }
   };
 
-  const handleUpdatePsbtField = (field: string, value: string) => {
-    if (psbt) {
-      try {
-        const updatedPsbt = new PsbtV2(psbt.serialize());
-        (updatedPsbt as any)[field] = value;
-        setPsbt(updatedPsbt);
-        setPsbtBase64(updatedPsbt.serialize());
-        setPsbtJson(JSON.stringify(updatedPsbt, null, 2));
-      } catch (error) {
-        console.error("Error updating PSBT field:", error);
-      }
+  const handleCreatePsbt = () => {
+    try {
+      const psbt = new PsbtV2();
+      psbt.addInput({
+        previousTxId: inputTxid,
+        outputIndex: parseInt(inputIndex, 10),
+      });
+      psbt.addOutput({
+        address: outputAddress,
+        amount: parseInt(outputAmount, 10),
+      });
+      setCreatedPsbt(psbt.serialize());
+    } catch (error) {
+      console.error("Error creating PSBT:", error);
+      setCreatedPsbt(
+        JSON.stringify({ error: "Invalid PSBT creation" }, null, 2),
+      );
     }
   };
 
   return (
-    <StyledPsbtGuide>
-      <Title>PSBT Guide</Title>
+    <div>
+      <h1>PSBT Guide</h1>
 
+      <SectionTitle>What is a PSBT?</SectionTitle>
       <Card>
-        <h2>Create PSBT</h2>
-        <Select
-          value={network}
-          onChange={(e) => setNetwork(e.target.value as Network)}
-        >
-          <option value={Network.TESTNET}>Testnet</option>
-          <option value={Network.MAINNET}>Mainnet</option>
-        </Select>
-
-        <h3>Inputs</h3>
-        {inputs.map((input, index) => (
-          <div key={index}>
-            <Input
-              placeholder="TXID"
-              value={input.txid}
-              onChange={(e) => {
-                const newInputs = [...inputs];
-                newInputs[index].txid = e.target.value;
-                setInputs(newInputs);
-              }}
-            />
-            <Input
-              type="number"
-              placeholder="Index"
-              value={input.index}
-              onChange={(e) => {
-                const newInputs = [...inputs];
-                newInputs[index].index = parseInt(e.target.value);
-                setInputs(newInputs);
-              }}
-            />
-            <Input
-              type="number"
-              placeholder="Amount (sats)"
-              value={input.amountSats}
-              onChange={(e) => {
-                const newInputs = [...inputs];
-                newInputs[index].amountSats = e.target.value;
-                setInputs(newInputs);
-              }}
-            />
-          </div>
-        ))}
-        <Button
-          onClick={() =>
-            setInputs([...inputs, { txid: "", index: 0, amountSats: "" }])
-          }
-        >
-          Add Input
-        </Button>
-
-        <h3>Outputs</h3>
-        {outputs.map((output, index) => (
-          <div key={index}>
-            <Input
-              placeholder="Address"
-              value={output.address}
-              onChange={(e) => {
-                const newOutputs = [...outputs];
-                newOutputs[index].address = e.target.value;
-                setOutputs(newOutputs);
-              }}
-            />
-            <Input
-              type="number"
-              placeholder="Amount (sats)"
-              value={output.amountSats}
-              onChange={(e) => {
-                const newOutputs = [...outputs];
-                newOutputs[index].amountSats = e.target.value;
-                setOutputs(newOutputs);
-              }}
-            />
-          </div>
-        ))}
-        <Button
-          onClick={() =>
-            setOutputs([...outputs, { address: "", amountSats: "" }])
-          }
-        >
-          Add Output
-        </Button>
-
-        <Button onClick={handleCreatePsbt}>Create PSBT</Button>
+        <p>
+          Partially Signed Bitcoin Transactions (PSBTs) are a data format that
+          allows for the exchange of information about a Bitcoin transaction
+          between multiple parties. PSBTs are particularly useful for multisig
+          wallets and hardware wallet interactions.
+        </p>
+        <p>Key features of PSBTs:</p>
+        <ul>
+          <li>Standardized format for sharing transaction information</li>
+          <li>Support for multi-party signing workflows</li>
+          <li>
+            Separation of transaction construction from transaction signing
+          </li>
+          <li>Enhanced privacy and security in transaction creation</li>
+        </ul>
       </Card>
 
-      <Card>
-        <h2>Parse/Edit PSBT</h2>
-        <TextArea
-          value={psbtBase64}
-          onChange={(e) => setPsbtBase64(e.target.value)}
-          placeholder="Enter PSBT (Base64)"
-        />
-        <Button onClick={handleParsePsbt}>Parse PSBT</Button>
+      <SectionTitle>Create a PSBT</SectionTitle>
+      <Card title="Create a simple PSBT">
+        <p>
+          Let's create a simple PSBT with one input and one output. This example
+          demonstrates how to construct a basic transaction using the PSBT
+          format.
+        </p>
+        <ExampleWrapper>
+          <CodeWrapper>
+            <CodeBlock language="typescript">
+              {`
+import { PsbtV2 } from '@caravan/psbt';
 
-        {psbt && (
-          <div>
-            <h3>Edit PSBT Fields</h3>
+const psbt = new PsbtV2();
+psbt.addInput({
+  previousTxId: '${inputTxid}',
+  outputIndex: ${inputIndex},
+});
+psbt.addOutput({
+  address: '${outputAddress}',
+  amount: ${outputAmount},
+});
+
+console.log(psbt.serialize());
+              `}
+            </CodeBlock>
             <Input
-              type="number"
-              value={psbt.PSBT_GLOBAL_TX_VERSION}
-              onChange={(e) =>
-                handleUpdatePsbtField("PSBT_GLOBAL_TX_VERSION", e.target.value)
-              }
-              placeholder="PSBT_GLOBAL_TX_VERSION"
+              value={inputTxid}
+              onChange={(e) => setInputTxid(e.target.value)}
+              placeholder="Input TXID"
             />
-          </div>
-        )}
+            <Input
+              value={inputIndex}
+              onChange={(e) => setInputIndex(e.target.value)}
+              placeholder="Input Index"
+              type="number"
+            />
+            <Input
+              value={outputAddress}
+              onChange={(e) => setOutputAddress(e.target.value)}
+              placeholder="Output Address"
+            />
+            <Input
+              value={outputAmount}
+              onChange={(e) => setOutputAmount(e.target.value)}
+              placeholder="Output Amount (in satoshis)"
+              type="number"
+            />
+            <Button onClick={handleCreatePsbt}>Create PSBT</Button>
+          </CodeWrapper>
+          <ConsoleWrapper>
+            <Console output={createdPsbt} />
+          </ConsoleWrapper>
+        </ExampleWrapper>
       </Card>
 
-      {psbtJson && (
-        <Card>
-          <h2>PSBT JSON</h2>
-          <pre>{psbtJson}</pre>
-        </Card>
-      )}
-    </StyledPsbtGuide>
+      <SectionTitle>Parse PSBT</SectionTitle>
+      <Card title="Parse an existing PSBT">
+        <p>
+          This example demonstrates how to parse a PSBT from its Base64
+          representation. You can use the PSBT created in the previous step or
+          paste any valid PSBT here.
+        </p>
+        <ExampleWrapper>
+          <CodeWrapper>
+            <CodeBlock language="typescript">
+              {`
+import { PsbtV2 } from '@caravan/psbt';
+
+const psbtBase64 = '${psbtBase64}';
+
+try {
+  const parsedPsbt = new PsbtV2(psbtBase64);
+  console.log(JSON.stringify(parsedPsbt, null, 2));
+} catch (error) {
+  console.error('Error parsing PSBT:', error);
+}
+              `}
+            </CodeBlock>
+            <Input
+              value={psbtBase64}
+              onChange={(e) => setPsbtBase64(e.target.value)}
+              placeholder="Enter PSBT (Base64)"
+            />
+            <Button onClick={handleParsePsbt}>Parse PSBT</Button>
+          </CodeWrapper>
+          <ConsoleWrapper>
+            <Console output={psbtJson} />
+          </ConsoleWrapper>
+        </ExampleWrapper>
+      </Card>
+
+      <SectionTitle>Working with PSBTs</SectionTitle>
+      <Card title="Common PSBT operations">
+        <p>Here are some common operations you might perform with PSBTs:</p>
+        <ul>
+          <li>Adding inputs and outputs</li>
+          <li>Signing inputs</li>
+          <li>Combining partially signed PSBTs</li>
+          <li>Finalizing a PSBT</li>
+          <li>Extracting a final transaction</li>
+        </ul>
+        <p>
+          These operations are typically performed by different parties in a
+          multi-signature setup or when using hardware wallets.
+        </p>
+      </Card>
+
+      <SectionTitle>Best Practices</SectionTitle>
+      <Card title="PSBT best practices">
+        <ul>
+          <li>Always validate inputs and outputs before signing a PSBT</li>
+          <li>
+            Use descriptors to provide additional context for inputs and outputs
+          </li>
+          <li>Implement proper error handling when working with PSBTs</li>
+          <li>Consider using PSBTs for cold storage and multisig setups</li>
+          <li>
+            Keep your PSBT library up-to-date to ensure compatibility with the
+            latest standards
+          </li>
+        </ul>
+      </Card>
+    </div>
   );
 };
 

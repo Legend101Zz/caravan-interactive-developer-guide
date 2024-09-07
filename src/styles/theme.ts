@@ -1,18 +1,19 @@
 export const theme = {
   colors: {
-    primary: "#0A2463", // Rich navy blue
-    secondary: "#FFD700", // Warm golden yellow
-    background: "#F5F5F5",
-    text: "#333333",
+    background: "#1e1e1e",
+    text: "#d4d4d4",
+    primary: "#569cd6",
+    secondary: "#4ec9b0",
+    accent: "#ce9178",
+    error: "#f44747",
   },
   fonts: {
-    body: "Roboto, sans-serif",
-    heading: "Playfair Display, serif",
+    body: 'Consolas, Monaco, "Courier New", monospace',
+    heading: 'Consolas, Monaco, "Courier New", monospace',
   },
-  breakpoints: {
-    sm: "576px",
-    md: "768px",
-    lg: "992px",
-    xl: "1200px",
+  spacing: {
+    small: "0.5rem",
+    medium: "1rem",
+    large: "1.5rem",
   },
 };
