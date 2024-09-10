@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
-import { Select } from "../components/Select";
+
 import CodeBlock from "../components/CodeBlock";
 import Console from "../components/Console";
 
