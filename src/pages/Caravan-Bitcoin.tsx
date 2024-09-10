@@ -86,7 +86,9 @@ const BitcoinGuide: React.FC = () => {
       );
       setChildPublicKey(result);
     } catch (error) {
-      setChildPublicKey(`Error: ${error.message}`);
+      setChildPublicKey(
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   };
 
@@ -104,9 +106,12 @@ const BitcoinGuide: React.FC = () => {
         requiredSigners,
         ...publicKeys.filter((pk) => pk !== ""),
       );
+      // @ts-ignore
       setMultisigAddress(address.address);
     } catch (error) {
-      setMultisigAddress(`Error: ${error.message}`);
+      setMultisigAddress(
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   };
 
@@ -127,12 +132,15 @@ const BitcoinGuide: React.FC = () => {
 
   const handleSignatureValidation = () => {
     try {
+      // @ts-ignore
       const isValid = Bitcoin.isValidSignature(publicKey, message, signature);
       setSignatureValidationResult(
         isValid ? "Signature is valid" : "Signature is invalid",
       );
     } catch (error) {
-      setSignatureValidationResult(`Error: ${error.message}`);
+      setSignatureValidationResult(
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   };
 
@@ -148,7 +156,9 @@ const BitcoinGuide: React.FC = () => {
       });
       setFeeValidationResult(`Estimated fee: ${feeEstimate} satoshis`);
     } catch (error) {
-      setFeeValidationResult(`Error: ${error.message}`);
+      setFeeValidationResult(
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   };
 

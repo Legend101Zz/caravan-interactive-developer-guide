@@ -87,6 +87,7 @@ const PsbtGuide: React.FC = () => {
         outputIndex: parseInt(inputIndex, 10),
       });
       psbt.addOutput({
+        // @ts-ignore
         address: outputAddress,
         amount: parseInt(outputAmount),
       });
