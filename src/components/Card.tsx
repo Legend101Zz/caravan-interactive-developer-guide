@@ -7,17 +7,19 @@ interface CardProps {
 }
 
 const CardWrapper = styled.div`
-  background-color: ${(props) => props.theme.colors.cardBackground};
+  background-color: #2d2d2d;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: ${(props) => props.theme.spacing.medium};
   margin-bottom: ${(props) => props.theme.spacing.large};
+  overflow: hidden;
 `;
 
 const CardTitle = styled.h3`
   color: ${(props) => props.theme.colors.primary};
   margin-top: 0;
   margin-bottom: ${(props) => props.theme.spacing.medium};
+  font-size: 1.2rem;
 `;
 
 const CardContent = styled.div`

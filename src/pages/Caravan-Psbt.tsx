@@ -9,22 +9,32 @@ import { Select } from "../components/Select";
 import CodeBlock from "../components/CodeBlock";
 import Console from "../components/Console";
 
-const SectionTitle = styled.h2`
-  color: ${(props) => props.theme.colors.primary};
-  margin-top: ${(props) => props.theme.spacing.large};
-`;
-
 const ExampleWrapper = styled.div`
   display: flex;
   gap: ${(props) => props.theme.spacing.medium};
+  flex-wrap: wrap;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
 `;
 
 const CodeWrapper = styled.div`
   flex: 1;
+  min-width: 300px;
+  width: 100%;
 `;
 
 const ConsoleWrapper = styled.div`
   flex: 1;
+  min-width: 300px;
+  width: 100%;
+`;
+
+const SectionTitle = styled.h2`
+  color: ${(props) => props.theme.colors.primary};
+  margin-top: ${(props) => props.theme.spacing.large};
+  font-size: 1.5rem;
 `;
 
 const PsbtGuide: React.FC = () => {

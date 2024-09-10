@@ -1,33 +1,56 @@
-// src/App.tsx
-import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { ThemeProvider } from "styled-components";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import styled, { ThemeProvider } from "styled-components";
 import { AnimatePresence } from "framer-motion";
 import { theme } from "./styles/theme";
 import { GlobalStyles } from "./styles/GlobalStyles";
+import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import BitcoinGuide from "./pages/Caravan-Bitcoin";
 import PsbtGuide from "./pages/Caravan-Psbt";
-import Sidebar from "./components/Sidebar";
-import styled from "styled-components";
 
 const AppContainer = styled.div`
   display: flex;
+  min-height: 100vh;
 `;
 
-const Content = styled.main`
+const Content = styled.main<{ isSidebarOpen: boolean }>`
   flex: 1;
-  padding: 2rem;
+  padding: ${(props) => props.theme.spacing.medium};
+  padding-top: 60px; // Space for the toggle button
+  transition: margin-left 0.3s ease;
+  width: 100%;
+
+  @media (min-width: 769px) {
+    margin-left: ${({ isSidebarOpen }) => (isSidebarOpen ? "250px" : "0")};
+    width: ${({ isSidebarOpen }) =>
+      isSidebarOpen ? "calc(100% - 250px)" : "100%"};
+  }
 `;
 
-const App: React.FC = () => {
+function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth > 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
       <Router>
         <AppContainer>
-          <Sidebar />
-          <Content>
+          <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+          <Content isSidebarOpen={isSidebarOpen}>
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -40,6 +63,6 @@ const App: React.FC = () => {
       </Router>
     </ThemeProvider>
   );
-};
+}
 
 export default App;

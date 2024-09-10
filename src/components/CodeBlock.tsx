@@ -4,9 +4,10 @@ import { Highlight, themes } from "prism-react-renderer";
 
 const Pre = styled.pre`
   text-align: left;
-  margin: 1em 0;
-  padding: 0.5em;
+  margin: 0;
+  padding: 1em;
   overflow: auto;
+  border-radius: 8px;
 `;
 
 const Line = styled.div`
