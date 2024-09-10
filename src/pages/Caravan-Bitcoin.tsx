@@ -53,6 +53,7 @@ const BitcoinGuide: React.FC = () => {
   const [feeValidationResult, setFeeValidationResult] = useState("");
   const [publicKeys, setPublicKeys] = useState(["", "", ""]);
   const [requiredSigners, setRequiredSigners] = useState(2);
+  const [totalSigners, setTotalSigners] = useState(2);
   const [multisigAddress, setMultisigAddress] = useState("");
   const [bip32Path, setBip32Path] = useState("m/0'/0'/0'");
   const [bip32ValidationResult, setBip32ValidationResult] = useState("");
@@ -62,8 +63,9 @@ const BitcoinGuide: React.FC = () => {
   const [signature, setSignature] = useState("");
   const [signatureValidationResult, setSignatureValidationResult] =
     useState("");
-  const [txHex, setTxHex] = useState("");
-  const [signedTxHex, setSignedTxHex] = useState("");
+  const [numInputs, setNumInputs] = useState(2);
+  const [numOutputs, setNumOutputs] = useState(2);
+  const [addressType, setAddressType] = useState(Bitcoin.P2SH);
 
   const handleValidateAddress = () => {
     const result = Bitcoin.validateAddress(address, network);
@@ -134,15 +136,38 @@ const BitcoinGuide: React.FC = () => {
     }
   };
 
+  const handleFeeEstimation = () => {
+    try {
+      const feeEstimate = Bitcoin.estimateMultisigTransactionFee({
+        addressType,
+        numInputs,
+        numOutputs,
+        m: requiredSigners,
+        n: publicKeys.filter((pk) => pk !== "").length,
+        feesPerByteInSatoshis: feeRate,
+      });
+      setFeeValidationResult(`Estimated fee: ${feeEstimate} satoshis`);
+    } catch (error) {
+      setFeeValidationResult(`Error: ${error.message}`);
+    }
+  };
+
   return (
     <div>
       <h1>Bitcoin Guide</h1>
+      <p>
+        Welcome to the interactive Bitcoin Guide for Caravan! This guide will
+        help you understand the core concepts and functionalities that power
+        Caravan's Bitcoin Package provides. By exploring these examples, you'll
+        gain practical insights into Bitcoin transactions, address management,
+        and security measures.
+      </p>
 
       <SectionTitle>Address Validation</SectionTitle>
       <p>
-        Address validation is crucial in Bitcoin to ensure that transactions are
-        sent to the correct destination. Different networks (Mainnet, Testnet)
-        have different address formats.
+        In Caravan, ensuring the correctness of Bitcoin addresses is crucial for
+        secure transactions. This section demonstrates how Caravan validates
+        addresses across different networks.
       </p>
       <ExampleWrapper>
         <CodeWrapper>
@@ -180,8 +205,9 @@ console.log(result || 'Address is valid');
 
       <SectionTitle>Public Key Validation</SectionTitle>
       <p>
-        Public keys are used to derive Bitcoin addresses and verify signatures.
-        Validating public keys ensures they are in the correct format.
+        Public keys are the foundation of Bitcoin's security model. In Caravan,
+        we use public keys to create multisig wallets and verify signatures.
+        Let's explore how to validate them:
       </p>
       <ExampleWrapper>
         <CodeWrapper>
@@ -212,9 +238,10 @@ console.log(result || 'Public key is valid');
       </ExampleWrapper>
       <SectionTitle>Extended Public Key Derivation</SectionTitle>
       <p>
-        Extended public keys (xpubs) allow us to derive child public keys
-        without knowing the private key. This is crucial for generating multiple
-        addresses from a single seed in HD wallets.
+        Caravan uses extended public keys (xpubs) to generate multiple addresses
+        without exposing private keys. This is essential for maintaining privacy
+        and security in a multisig setup. Let's see how child public keys are
+        derived:
       </p>
       <ExampleWrapper>
         <CodeWrapper>
@@ -286,50 +313,76 @@ console.log(result || 'Public key is valid');
 
       <SectionTitle>Transaction Fee Estimation</SectionTitle>
       <p>
-        Estimating the correct fee for a transaction is important. Let's
-        estimate the fee for a multisig transaction:
+        Accurate fee estimation is crucial for timely transaction confirmation.
+        Caravan calculates fees based on transaction complexity, especially for
+        multisig setups. Experiment with different parameters to understand how
+        they affect the fee:
       </p>
       <ExampleWrapper>
         <CodeWrapper>
           <CodeBlock language="typescript">
             {`
-       import { estimateMultisigTransactionFee } from '@caravan/bitcoin';
+        import { estimateMultisigTransactionFee } from '@caravan/bitcoin';
 
-       const feeEstimate = estimateMultisigTransactionFee({
-         addressType: 'P2SH',
-         numInputs: 2,
-         numOutputs: 2,
-         m: 2,
-         n: 3,
-         feesPerByteInSatoshis: '${feeRate}'
-       });
+        const feeEstimate = estimateMultisigTransactionFee({
+          addressType: '${addressType}',
+          numInputs: ${numInputs},
+          numOutputs: ${numOutputs},
+          m: ${requiredSigners},
+          n: ${totalSigners},
+          feesPerByteInSatoshis: '${feeRate}'
+        });
 
-       console.log('Estimated fee:', feeEstimate, 'satoshis');
-                   `}
+        console.log('Estimated fee:', feeEstimate, 'satoshis');
+              `}
           </CodeBlock>
           <Card>
+            <Select
+              value={addressType}
+              onChange={(e) =>
+                setAddressType(e.target.value as Bitcoin.MultisigAddressType)
+              }
+            >
+              <option value={Bitcoin.P2SH}>P2SH</option>
+              <option value={Bitcoin.P2SH_P2WSH}>P2SH-P2WSH</option>
+              <option value={Bitcoin.P2WSH}>P2WSH</option>
+            </Select>
+            <Input
+              type="number"
+              value={numInputs}
+              onChange={(e) => setNumInputs(Number(e.target.value))}
+              placeholder="Number of Inputs"
+            />
+            <Input
+              type="number"
+              value={numOutputs}
+              onChange={(e) => setNumOutputs(Number(e.target.value))}
+              placeholder="Number of Outputs"
+            />
+            <Input
+              type="number"
+              value={requiredSigners}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setRequiredSigners(Math.min(value, totalSigners));
+              }}
+              placeholder="Required Signers (M)"
+            />
+            <Input
+              type="number"
+              value={totalSigners}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setTotalSigners(Math.max(value, requiredSigners));
+              }}
+              placeholder="Total Signers (N)"
+            />
             <Input
               value={feeRate}
               onChange={(e) => setFeeRate(e.target.value)}
-              placeholder="Enter fee rate in satoshis/byte"
+              placeholder="Fee Rate (satoshis/byte)"
             />
-            <Button
-              onClick={() => {
-                const feeEstimate = Bitcoin.estimateMultisigTransactionFee({
-                  addressType: "P2SH",
-                  numInputs: 2,
-                  numOutputs: 2,
-                  m: 2,
-                  n: 3,
-                  feesPerByteInSatoshis: feeRate,
-                });
-                setFeeValidationResult(
-                  `Estimated fee: ${feeEstimate} satoshis`,
-                );
-              }}
-            >
-              Estimate Fee
-            </Button>
+            <Button onClick={handleFeeEstimation}>Estimate Fee</Button>
           </Card>
         </CodeWrapper>
         <ConsoleWrapper>
@@ -339,31 +392,59 @@ console.log(result || 'Public key is valid');
 
       <SectionTitle>Multisig Address Generation</SectionTitle>
       <p>
-        Multisig addresses require multiple signatures to spend funds, enhancing
-        security. Let's generate a multisig address from public keys:
+        Multisig addresses are at the core of Caravan's security model. They
+        require multiple signatures to spend funds, distributing trust and
+        reducing single points of failure. Let's create a multisig address:
       </p>
       <ExampleWrapper>
         <CodeWrapper>
           <CodeBlock language="typescript">
             {`
-       import { generateMultisigFromPublicKeys, Network, P2SH } from '@caravan/bitcoin';
+        import { generateMultisigFromPublicKeys, Network } from '@caravan/bitcoin';
 
-       const publicKeys = ${JSON.stringify(publicKeys)};
-       const requiredSigners = ${requiredSigners};
-       const network = Network.${network};
+        const publicKeys = ${JSON.stringify(publicKeys.slice(0, totalSigners))};
+        const requiredSigners = ${requiredSigners};
+        const totalSigners = ${totalSigners};
+        const network = Network.${network};
 
-       const multisig = generateMultisigFromPublicKeys(
-         network,
-         P2SH,
-         requiredSigners,
-         ...publicKeys.filter(pk => pk !== '')
-       );
+        const multisig = generateMultisigFromPublicKeys(
+          network,
+          '${addressType}',
+          requiredSigners,
+          ...publicKeys.filter(pk => pk !== '')
+        );
 
-       console.log('Multisig Address:', multisig.address);
-                   `}
+        console.log('Multisig Address:', multisig.address);
+              `}
           </CodeBlock>
           <Card>
-            {publicKeys.map((pk, index) => (
+            <Input
+              type="number"
+              value={totalSigners}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setTotalSigners(Math.max(value, requiredSigners));
+                if (value > publicKeys.length) {
+                  setPublicKeys([
+                    ...publicKeys,
+                    ...Array(value - publicKeys.length).fill(""),
+                  ]);
+                } else {
+                  setPublicKeys(publicKeys.slice(0, value));
+                }
+              }}
+              placeholder="Total Signers (N)"
+            />
+            <Input
+              type="number"
+              value={requiredSigners}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setRequiredSigners(Math.min(value, totalSigners));
+              }}
+              placeholder="Required Signers (M)"
+            />
+            {publicKeys.slice(0, totalSigners).map((pk, index) => (
               <Input
                 key={index}
                 value={pk}
@@ -375,12 +456,16 @@ console.log(result || 'Public key is valid');
                 placeholder={`Enter Public Key ${index + 1}`}
               />
             ))}
-            <Input
-              value={requiredSigners}
-              onChange={(e) => setRequiredSigners(Number(e.target.value))}
-              placeholder="Required Signers"
-              type="number"
-            />
+            <Select
+              value={addressType}
+              onChange={(e) =>
+                setAddressType(e.target.value as Bitcoin.MultisigAddressType)
+              }
+            >
+              <option value={Bitcoin.P2SH}>P2SH</option>
+              <option value={Bitcoin.P2SH_P2WSH}>P2SH-P2WSH</option>
+              <option value={Bitcoin.P2WSH}>P2WSH</option>
+            </Select>
             <Button onClick={handleMultisigAddressGeneration}>
               Generate Multisig Address
             </Button>
@@ -509,6 +594,20 @@ console.log(result || 'Public key is valid');
           <Console output={signatureValidationResult} />
         </ConsoleWrapper>
       </ExampleWrapper>
+
+      <SectionTitle>Conclusion</SectionTitle>
+      <p>
+        Congratulations! You've explored the core concepts that power Caravan's
+        multisig wallet functionality. Understanding these Bitcoin fundamentals
+        is crucial for safely managing your digital assets. Remember, Caravan
+        combines these elements to provide a secure, transparent, and
+        customizable multisig wallet solution.
+      </p>
+      <p>
+        As you continue to use Caravan, you'll see these concepts in action,
+        from address generation to transaction signing. Keep experimenting and
+        learning to make the most of your Caravan multisig wallet!
+      </p>
     </div>
   );
 };
